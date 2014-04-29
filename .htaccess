@@ -1,0 +1,18 @@
+# Запрещаем доступ к файлу TODO
+<Files "TODO.txt">
+	deny from all
+</Files>
+
+# Устанавливаем страницу для ошибки 404
+ErrorDocument 404 /index.php
+ 
+# Устанавливаем индексный файл для директории
+DirectoryIndex index.php
+ 
+# Определяем правила для модуля mod_rewrite
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^(.*)$ index.php?/$1 [L]
+</IfModule>
