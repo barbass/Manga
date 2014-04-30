@@ -12,6 +12,7 @@ class Main extends CI_Controller {
 			'get_manga_folder' => base_url('main/getMangaFolder'),
 			'get_image_list' => base_url('main/getImageList'),
 			'get_download_list' => base_url('main/downloadImage'),
+			'save_manga_description' => base_url('main/saveMangaDescription'),
 		);
 		
 		$this->load->view('header');
@@ -24,9 +25,31 @@ class Main extends CI_Controller {
 	 * */
 	public function getMangaInfo() {
 		$url = $this->input->get_post('url');
+		$folder = $this->input->get_post('folder', '');
 		$json = array();
 		
 		try {
+			
+			if (!empty($folder)) {
+				/*$description = read_file($folder.'main.txt');
+				if (!empty($description)) {
+					$json['description'] = $description;
+				}*/
+				
+				/*foreach(array('png', 'gif', 'jpg', 'jpeg') as $key=>$value) {
+					if (file_exists($folder.'/'.'main.'.$value)) {
+						//$image = readfile($folder.'\\'.'main.'.$value);
+						//$image = base64_encode($image);
+						$exception = $value;
+					}
+				}
+				
+				if (!empty($image)) {
+					$json['img'] = $image;
+					$json['exception'] = $exception;
+				}*/
+			}
+			
 			$html = $this->getContents($url, true);
 
 			if (!empty($html)) {
@@ -56,7 +79,7 @@ class Main extends CI_Controller {
 			if ($handle = opendir($folder)) {
 				$i = 0;
 				while (false !== ($entry = readdir($handle))) {
-					if ($entry == '.' || $entry == '..') {
+					if (is_file($folder.'/'.$entry) || $entry == '.' || $entry == '..') {
 						continue;
 					}
 					
@@ -105,6 +128,7 @@ class Main extends CI_Controller {
 						$json['message'] = 'Нет данных (prevLink)';
 					} else {
 						$data = trim($data[0]);
+						// удаляем ;
 						$data = substr_replace($data,'', -1, 1);
 						
 						$json['list'] = $data;
@@ -136,6 +160,9 @@ class Main extends CI_Controller {
 	 * Загрузка изображений
 	 * */
 	public function downloadImage() {
+		// для больших манг делаем 15 минут
+		set_time_limit(900); 
+		
 		$json = array();
 		$list = $this->input->get_post('list');
 		$volume = $this->input->get_post('volume', 'vol1');
@@ -155,7 +182,7 @@ class Main extends CI_Controller {
 		$dir = $folder.'/'.$volume.'/'.$chapter;
 		
 		// Грузим данные по циклу
-		/*$i = 0;
+		$i = 0;
 		foreach($list as $l) {
 			$image_array = explode('/', $l['url']);
 			$image = end($image_array);
@@ -166,7 +193,7 @@ class Main extends CI_Controller {
 			}
 			
 			try {
-				$data = $this->getContents($l['url']);
+				$data = $this->getHtml($l['url']);
 				write_file($dir.'/'.$image, $data);
 			} catch(Exception $e) {
 				$json['success'] = 'false';
@@ -174,16 +201,14 @@ class Main extends CI_Controller {
 				continue;
 			}
 			
-			// заставляем скрипт заснуть на 2 секунды, чтобы не было DDOS и ресурсы сервера не загрузить
-			if ($i > 2) {
+			// заставляем скрипт заснуть на N секунд, чтобы не было DDOS и ресурсы сервера не загрузить
+			if ($i > 1) {
 				$i = 0;
-				sleep(5);
+				sleep(10);
 			}
 			
 			$i++;
-		}*/
-		
-		$result = $this->recursionDownloadImage($list, 0, $dir);
+		}
 		
 		if (empty($json)) {
 			$json['success'] = 'true';
@@ -192,41 +217,47 @@ class Main extends CI_Controller {
 		
 		$this->output->set_content_type('text/json')->set_output(json_encode($json));
 	}
-	
-	private function recursionDownloadImage($list, $index, $dir) {
-		$l = $list[$index];
-		$image_array = explode('/', $l['url']);
-		$image = end($image_array);
+
+	/*
+	 * Сохранение описания манги
+	 * */
+	public function saveMangaDescription() {
+		$json = array();
+		$img = $this->input->get_post('img', '');
+		$description = $this->input->get_post('description', '');
+		$folder = $this->input->get_post('folder', 'default');
+		
+		if (!is_dir($folder)) {
+			mkdir($folder);
+		}
+		
+		if (!empty($description) || !is_dir($folder.'/'.'main.txt')) {
+			write_file($folder.'/'.'main.txt', $description);
+		}
+		
+		if (!empty($img)) {
+			$image_array = explode('/', $img);
+			$image = end($image_array);
 			
-		// или грузить все, а потом сравнивать по md5?
-		if (file_exists($dir.'/'.$image)) {
-			if (isset($list[$index++])) {
-				$this->recursionDownloadImage($list, $index++, $dir);
-				return;
+			$data = $this->getHtml($img);
+			write_file($folder.'/'.$image, $data);
+			
+			$extension_image_array = explode('.', $image);
+			$extension_image = end($extension_image_array);
+
+			if (in_array($extension_image, array('png', 'gif', 'jpg', 'jpeg'))) {
+				rename($folder.'/'.$image, $folder.'/'.'main.'.$extension_image);
 			} else {
-				return true;
+				unlink($folder.'/'.$image);
 			}
 		}
-			
-		try {
-			$data = $this->getContents($l['url']);
-			write_file($dir.'/'.$image, $data);
-		} catch(Exception $e) {
-			$json['success'] = 'false';
-			$json['message'] = 'Ошибка загрузки изображения';
-			continue;
-		}
-			
-		// заставляем скрипт заснуть на 2 секунды, чтобы не было DDOS и ресурсы сервера не загрузить
-		sleep(2);
 		
-		if (isset($list[$index++])) {
-			$this->recursionDownloadImage($list, $index++, $dir);
-		} else {
-			return true;
-		}
+		$json['success'] = 'true';
+		$json['message'] = 'Данные сохранены';
+		
+		$this->output->set_content_type('text/json')->set_output(json_encode($json));
 	}
-	
+
 	/*
 	 * Загрузка страницы
 	 * TODO: в model по факту надо перенести
@@ -242,9 +273,9 @@ class Main extends CI_Controller {
 				throw new Exception('Ошибка загрузки страницы');
 				return false;
 			}
-			// сохраняем кеш на 1 час
+			// сохраняем кеш на 24 часа
 			if ($cache === true) {
-				$this->cache->save($filename, $contents, 3600);
+				$this->cache->save($filename, $contents, 86400);
 			}
 		}
 		
@@ -254,6 +285,22 @@ class Main extends CI_Controller {
 		}
 		
 		return $contents;
+	}
+	
+	private function getHtml($url) {
+		
+		ob_clean();
+		
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type' => 'text/html; encoding=utf-8'));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		
+		$result = curl_exec($ch);
+		
+		curl_close($ch);
+		
+		return $result;
 	}
 	
 }

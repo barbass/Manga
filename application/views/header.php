@@ -2,7 +2,7 @@
 <html lang="ru">
 	<head>
 		<meta charset="utf-8" />
-		<title><?php echo (isset($title)) ? $title : '';?></title>
+		<title>Манга</title>
 		
 		<link rel="stylesheet" href="<?php echo base_url("resource/css/style.css");?>">
 		<script type='text/javascript' src="<?php echo base_url("resource/js/jquery-1.8.3.min.js");?>"></script>
