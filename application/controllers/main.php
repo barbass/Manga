@@ -1,9 +1,11 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Main extends CI_Controller {
-
+	// Переменная нахождения данных в кеше
+	protected $in_cache = false;
+	
 	public function __contruct() {
-
+		
 	}
 
 	public function index() {
@@ -133,13 +135,7 @@ class Main extends CI_Controller {
 						
 						$json['list'] = $data;
 						$json['success'] = 'true';
-						/*if ($list) {
-							$json['list'] = $data[0];
-							$json['success'] = 'true';
-						} else {
-							$json['success'] = 'false';
-							$json['message'] = 'Нет данных (json)';
-						}*/
+						$json['cache'] = $this->in_cache;
 					}
 				}
 				
@@ -160,7 +156,7 @@ class Main extends CI_Controller {
 	 * Загрузка изображений
 	 * */
 	public function downloadImage() {
-		// для больших манг делаем 15 минут
+		// для больших манг делаем 15 минут время скрипта
 		set_time_limit(900); 
 		
 		$json = array();
@@ -194,6 +190,12 @@ class Main extends CI_Controller {
 			
 			try {
 				$data = $this->getHtml($l['url']);
+				if (empty($data)) {
+					$json['success'] = 'false';
+					$json['message'] = 'Ошибка загрузки изображения'.' ('.$l['url'].')';
+					continue;
+				}
+				
 				write_file($dir.'/'.$image, $data);
 			} catch(Exception $e) {
 				$json['success'] = 'false';
@@ -204,7 +206,7 @@ class Main extends CI_Controller {
 			// заставляем скрипт заснуть на N секунд, чтобы не было DDOS и ресурсы сервера не загрузить
 			if ($i > 1) {
 				$i = 0;
-				sleep(10);
+				sleep(5);
 			}
 			
 			$i++;
@@ -212,7 +214,7 @@ class Main extends CI_Controller {
 		
 		if (empty($json)) {
 			$json['success'] = 'true';
-			$json['message'] = 'Данные сохранены';
+			$json['message'] = 'Данные сохранены'.' ('.$volume.' - '.$chapter.')';
 		}
 		
 		$this->output->set_content_type('text/json')->set_output(json_encode($json));
@@ -268,6 +270,8 @@ class Main extends CI_Controller {
 		
 		$filename = md5($url);
 		if (!$contents = $this->cache->get($filename)) {
+			$this->in_cache = false;
+			
 			$contents = file_get_contents($url, $use_include_path, $context, $offset);
 			if (!$contents || empty($contents) || strlen($contents) > 600000) {
 				throw new Exception('Ошибка загрузки страницы');
@@ -277,6 +281,8 @@ class Main extends CI_Controller {
 			if ($cache === true) {
 				$this->cache->save($filename, $contents, 86400);
 			}
+		} else {
+			$this->in_cache = true;
 		}
 		
 		if (!$contents) {
@@ -287,8 +293,11 @@ class Main extends CI_Controller {
 		return $contents;
 	}
 	
+	/*
+	 * Скачивание данных
+	 * Доп. функция для работы через cUrl
+	 * */
 	private function getHtml($url) {
-		
 		ob_clean();
 		
 		$ch = curl_init();

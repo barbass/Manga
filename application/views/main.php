@@ -1,6 +1,6 @@
 <div class="col-sm-9 col-md-10 col-lg-12 main">
 		
-	<h2 class="form-signin-heading">Скачивание</h2>
+	<h2 class="form-signin-heading heading">Скачивание</h2>
 		
 	<?php if (!empty($error)) { ?>
 		<div class="alert alert-dismissable alert-danger">
@@ -17,33 +17,41 @@
 	<?php } ?>
 		
 	<br>
+	
+	<div>
+		<div>
+			Сайт: <input id="site" type='url' class="form-control" value='' autocomplete='on' maxlength='150' required placeholder="http://site.com/">
+			<br>
+			<button id="get_manga_info" class='btn btn-primary'>Инфо</button>
+		</div>
 		
-	<div>
-		Сайт: <input id="site" type='url' class="form-control" value='' autocomplete='on' maxlength='150' required placeholder="http://site.com/">
-		<br>
-		<button id="get_manga_info" class='btn btn-primary'>Инфо</button>
-	</div>
-	<br><br>
-	<div>
-		Папка: <input id="folder" type='url' class="form-control" value='' autocomplete='on' maxlength='150' placeholder="D:\manga">
-		<br>
-		<button id="get_manga_folder" class='btn btn-primary'>Найти</button>
+		<br><br>
+		
+		<div>
+			Папка: <input id="folder" type='url' class="form-control" value='' autocomplete='on' maxlength='150' placeholder="D:\manga">
+			<br>
+			<button id="get_manga_folder" class='btn btn-primary'>Найти</button>
+		</div>
 	</div>
 
 	<br><br><br>
 	
-	<button id="download_manga_chapter_list" class='btn btn-primary'>Сохранить главы</button>
+	<div>
+		<button id="download_manga_chapter_image_list" class='btn btn-primary'>Получить списки изображений</button>
+	</div>
 	
 	<br><br>
 	
-	<button id="download_manga_chapter_image_list" class='btn btn-primary'>Обновить списки глав</button>
+	<div>
+		<button id="download_manga_chapter_list" class='btn btn-primary'>Сохранить главы (изображения)</button>
+	</div>
 	
 	<br><br>
 	
 	<table id="manga" class='table'>
 		<tr>
 			<td>Описание</td>
-			<td><input type='checkbox' id="checked_all_checkbox_download">&nbsp;Главы</td>
+			<td><input type='checkbox' id="checked_all_checkbox_download" value='1'>&nbsp;Главы</td>
 			<td>Действие</td>
 			<td align='right'>Наличие</td>
 		</tr>
@@ -67,6 +75,11 @@
 		var sites = ['http://readmanga.me', 'http://adultmanga.ru'];
 		// список глав и ссылок на картинки
 		var image_list = {};
+		
+		(function() {
+			var text = "<p>Поддерживаются сайты: "+sites.join(', ')+"</p>";
+			$('h2.heading').after(text);
+		})();
 		
 		// Инфо о манге
 		$('#get_manga_info').on('click', function() {
@@ -361,6 +374,7 @@
 				
 				if (list[next_index]) {
 					recursionDownloadChapterLink(next_index, list);
+					return;
 				} else {
 					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные загружены</strong></div>");
 				}
@@ -386,11 +400,16 @@
 						$('#manga td.chapter').find('a[data-href="'+url+'"]').parents('div').eq(0).find('span.count').text('('+len+')');
 						
 						if (list[next_index]) {
-							setTimeout(function() {
+							// если данные в кеше, то следующий запрос делаем сразу
+							if (json['cache'] && (json['cache'] == 'true' || json['cache'] == true)) {
 								recursionDownloadChapterLink(next_index, list);
-							}, 3000);
+							} else {
+								setTimeout(function() {
+									recursionDownloadChapterLink(next_index, list);
+								}, 3000);
+							}
 						} else {
-							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данные загружены</strong></div>");
+							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные глав загружены</strong></div>");
 						}
 						
 					} else if (json && json['success'] && json['success'] == 'false') {
@@ -421,11 +440,11 @@
 				return;
 			}
 			
-			recursionDownloadImage(0, list);
+			recursionDownloadImageList(0, list);
 		});
 		
-		// Рекурсивоное скачивание данных
-		function recursionDownloadImage(index, list) {
+		// Рекурсивное скачивание изображений по главам
+		function recursionDownloadImageList(index, list) {
 			$('.main div.alert').remove();
 			var next_index = index+1;
 			var url = $('#manga td.chapter a.download').eq(list[index]).attr('data-href');
@@ -449,22 +468,32 @@
 			$.ajax({
 				url: "<?php echo $action['get_download_list'];?>",
 				data: {"list": image_list[url], 'volume': data[4], 'chapter': data[5], 'folder': folder},
+				timeout: 900000,
 				type: "POST",
 				dataType: 'json',
 				success: function(json) {
 					if (json && json['success'] && json['success'] == 'true') {
-						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
+						if (!json['message']) {
+							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
+						} else {
+							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+						}
 						
-						if (list[next_index]) {
-							setTimeout(function() {
-								recursionDownloadImage(next_index, list);
-							}, 3000);
+						if (!list[next_index]) {
+							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
 						}
 					} else if (json && json['success'] && json['success'] == 'false') {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
 					} else {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка поиска каталога</strong></div>");
 					}
+					
+					if (json && (!json['fatal'] || json['fatal'] != 'true') && list[next_index]) {
+						setTimeout(function() {
+							recursionDownloadImageList(next_index, list);
+						}, 3000);
+					}
+					
 				},
 				error: function() {
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
