@@ -279,9 +279,7 @@
 				dataType: 'json',
 				success: function(json) {
 					if (json && json['success'] && json['success'] == 'true') {
-						// TODO: плохо, но не знаю как иначе
-						eval("var list = "+json['list']);
-						
+						var list = json['list'];
 						image_list[url] = list;
 						
 						var len = 0;
@@ -398,9 +396,7 @@
 				dataType: 'json',
 				success: function(json) {
 					if (json && json['success'] && json['success'] == 'true') {
-						// TODO: плохо, но не знаю как иначе
-						eval("var list_link = "+json['list']);
-						
+						var list_link = json['list'];
 						image_list[url] = list_link;
 						
 						var len = 0;
@@ -530,8 +526,6 @@
 			var text = $('#select_chapter').val();
 			var pre_chapters = text.split(',');
 			
-			var time = new Date().getMilliseconds();
-			
 			for(var key in pre_chapters) {
 				pre_chapters[key] = pre_chapters[key].trim();
 				
@@ -602,9 +596,6 @@
 					}
 				}
 			}
-			
-			var time_end = new Date().getMilliseconds();
-			console.log('time='+(time_end - time));
 			
 		});
 		

@@ -133,7 +133,17 @@ class Main extends CI_Controller {
 						// удаляем ;
 						$data = substr_replace($data,'', -1, 1);
 						
-						$json['list'] = $data;
+						$tmp1 = preg_split('/{url:"/im', $data, -1, PREG_SPLIT_NO_EMPTY);
+						$list = array();
+						foreach($tmp1 as $key=>$value) {
+							if ($value == '[') {
+								continue;
+							}
+							$tmp2 = explode('"',$value);
+							$list[] = $tmp2[0];
+						}
+						
+						$json['list'] = $list;
 						$json['success'] = 'true';
 						$json['cache'] = $this->in_cache;
 					}
@@ -180,7 +190,7 @@ class Main extends CI_Controller {
 		// Грузим данные по циклу
 		$i = 0;
 		foreach($list as $l) {
-			$image_array = explode('/', $l['url']);
+			$image_array = explode('/', $l);
 			$image = end($image_array);
 			
 			// или грузить все, а потом сравнивать по md5?
@@ -189,10 +199,11 @@ class Main extends CI_Controller {
 			}
 			
 			try {
-				$data = $this->getHtml($l['url']);
-				if (empty($data)) {
+				$data = $this->getHtml($l);
+				// ограничение на ~ 2 мб
+				if (empty($data) || strlen($data) > 3000000) {
 					$json['success'] = 'false';
-					$json['message'] = 'Ошибка загрузки изображения'.' ('.$l['url'].')';
+					$json['message'] = 'Ошибка загрузки изображения'.' ('.$l.')';
 					continue;
 				}
 				
@@ -304,6 +315,8 @@ class Main extends CI_Controller {
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type' => 'text/html; encoding=utf-8'));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+		// 3 минуты на закачивание файла
+		curl_setopt($ch, CURLOPT_TIMEOUT, 180);
 		
 		$result = curl_exec($ch);
 		
