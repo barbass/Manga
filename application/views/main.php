@@ -222,13 +222,13 @@
 				dataType: 'json',
 				success: function(json) {
 					if (json && json['success'] && json['success'] === 'true') {
-						var a_array = [];
-						if (json['folder'].length) {
-							var span = $('#manga div span.folder');
+						
+						if (json['folder'].length > 0) {
 							var non_folder = [];
-							for(var i=0; i<span.length; i++) {
-								if (json['folder'][i]) {
-									$(span).eq(i).text(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
+							for(var i=0; i<json['folder'].length; i++) {
+								var a = $('#manga .chapter_link[data-href *= "'+json['folder'][i]['name']+'"]');
+								if (a.length == 1) {
+									$(a).parents('tr').eq(0).find('span.folder').text(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
 								} else {
 									non_folder[i] = true;
 								}
@@ -245,7 +245,6 @@
 								error = error.join('<br><br>');
 								$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+error+"</strong></div>");
 							}
-							
 							
 						} else {
 							$('#manga div span.folder').eq(0).text('Данных нет');
@@ -264,7 +263,7 @@
 			
 		});
 		
-		/* Получение списка картинок главы */
+		// Получение списка картинок главы
 		$('#manga td.chapter').on('click', 'a.chapter_link', function() {
 			var a = $(this);
 			$('.main div.alert').remove();
