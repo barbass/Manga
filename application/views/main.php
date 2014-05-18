@@ -224,21 +224,21 @@
 					if (json && json['success'] && json['success'] === 'true') {
 						
 						if (json['folder'].length > 0) {
-							var non_folder = [];
-							for(var i=0; i<json['folder'].length; i++) {
-								var a = $('#manga .chapter_link[data-href *= "'+json['folder'][i]['name']+'"]');
-								if (a.length == 1) {
-									$(a).parents('tr').eq(0).find('span.folder').text(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
-								} else {
-									non_folder[i] = true;
-								}
-							}
-							
 							var error = [];
 							for(var i=0; i<json['folder'].length; i++) {
-								if (non_folder[i]) {
+								var a = $('#manga .chapter_link[data-href $= "'+json['folder'][i]['name']+'"]');
+
+								if (a.length == 1) {
+									var count_image = $(a).parents('tr').eq(0).find('span.count').text();
+									$(a).parents('tr').eq(0).find('span.folder').text(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
+								} else {
 									error.push(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
 								}
+								
+								if (count_image && count_image != ('('+json['folder'][i]['count']+')')) {
+									error.push(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
+								}
+								
 							}
 							
 							if (error.length > 0) {
