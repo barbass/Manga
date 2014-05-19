@@ -75,6 +75,8 @@
 	<div id="" class=''></div>
 </div>
 
+<a href='javascript:void(0);' id="back_top">Наверх</a>
+
 <script type='text/javascript'>
 	// Очищение таблицы манги
 	function clear() {
@@ -247,7 +249,7 @@
 							}
 							
 						} else {
-							$('#manga div span.folder').eq(0).text('Данных нет');
+							$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данных нет</strong></div>");
 						}
 						
 					} else if (json && json['success'] && json['success'] == 'false') {
@@ -598,5 +600,19 @@
 			
 		});
 		
+		// Кнопка Наверх
+		$(window).scroll(function() {
+			if ($(this).scrollTop() > 400) {
+				$('#back_top').fadeIn();
+			} else {
+				$('#back_top').fadeOut();
+			}
+		});
+
+		$('#back_top').on('click', function() {
+			$('body,html').animate({scrollTop: 0}, 800);
+			return false;
+		});
+
 	});
 </script>
