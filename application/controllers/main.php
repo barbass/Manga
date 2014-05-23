@@ -166,6 +166,8 @@ class Main extends CI_Controller {
 	 * Загрузка изображений
 	 * */
 	public function downloadImage() {
+		$config_manga = $this->config->item('manga');
+		
 		// для больших манг делаем 15 минут время скрипта
 		set_time_limit(900); 
 		
@@ -201,7 +203,7 @@ class Main extends CI_Controller {
 			try {
 				$data = $this->getHtml($l);
 				// ограничение на ~ 2 мб
-				if (empty($data) || strlen($data) > 3000000) {
+				if (empty($data) || strlen($data) > $config_manga['length']) {
 					$json['success'] = 'false';
 					$json['message'] = 'Ошибка загрузки изображения'.' ('.$l.')';
 					continue;
@@ -278,19 +280,21 @@ class Main extends CI_Controller {
 	 * */
 	private function getContents($url, $cache = false, $use_include_path = false, $context=null, $offset = -1, $maxLen=-1, $lowercase = true) {
 		$this->load->driver('cache', array('adapter' => 'file'));
+		$config_manga = $this->config->item('manga');
 		
 		$filename = md5($url);
 		if (!$contents = $this->cache->get($filename)) {
 			$this->in_cache = false;
 			
 			$contents = file_get_contents($url, $use_include_path, $context, $offset);
-			if (!$contents || empty($contents) || strlen($contents) > 600000) {
+			if (!$contents || empty($contents) || strlen($contents) > $config_manga['page']) {
 				throw new Exception('Ошибка загрузки страницы');
 				return false;
 			}
 			// сохраняем кеш на 24 часа
 			if ($cache === true) {
-				$this->cache->save($filename, $contents, 86400);
+				// 24*60*60
+				$this->cache->save($filename, $contents, $config_manga['cache']);
 			}
 		} else {
 			$this->in_cache = true;
