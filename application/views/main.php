@@ -59,6 +59,12 @@
 		</button>
 	</div>
 	
+	<div class='block'>
+		<button id="button_ajax" class='btn btn-primary'>
+			<span class="glyphicon glyphicon-ban-circle"></span>&nbsp;Остановить ajax-запросы
+		</button>
+	</div>
+	
 	<table id="manga" class='table'>
 		<tr>
 			<td>Описание</td>
@@ -78,6 +84,15 @@
 <a href='javascript:void(0);' id="back_top">Наверх</a>
 
 <script type='text/javascript'>
+	var ajax_allowed = true;
+	
+	$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+		if(!ajax_allowed) {
+			jqXHR.abort();
+			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ajax-запросы запрещены</strong></div>");
+		}
+	});
+	
 	// Очищение таблицы манги
 	function clear() {
 		$('#manga').find('td.manga, td.chapter').empty();
@@ -93,6 +108,22 @@
 			var text = "<p>Поддерживаются сайты: "+sites.join(', ')+"</p>";
 			$('h2.heading').after(text);
 		})();
+		
+		// Запрещение/разрешение ajax-запросов
+		$('#button_ajax').on('click', function() {
+			$('.main div.alert').remove();
+			
+			if (ajax_allowed) {
+				ajax_allowed = false;
+				$(this).html('<span class="glyphicon glyphicon-ok-circle"></span>&nbsp;Разрешить ajax-запросы');
+					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ajax-запросы остановлены</strong></div>");
+			} else {
+				ajax_allowed = true;
+				$(this).html('<span class="glyphicon glyphicon-ban-circle"></span>&nbsp;Остановить ajax-запросы');
+					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ajax-запросы разрешены</strong></div>");
+			}
+			
+		});
 		
 		// Инфо о манге
 		$('#get_manga_info').on('click', function() {
@@ -112,7 +143,7 @@
 			}
 			
 			if (!site) {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Сайт не поддерживается/strong></div>");
+				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Сайт не поддерживается</strong></div>");
 				return;
 			}
 			
