@@ -16,6 +16,15 @@
 		</div>
 	<?php } ?>
 	
+	<div id='ajaxLoading' class='hide' title='Ajax-загрузка...'>
+		<div class="progress progress-striped active">
+			<div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
+				<span class="sr-only">100% Complete</span>
+			</div>
+		</div>
+		<span>Ajax-загрузка...</span>
+	</div>
+	
 	<div class='block'>
 		<div>
 			Сайт: <input id="site" type='url' class="form-control" value='' autocomplete='on' maxlength='150' required placeholder="http://site.com/">
@@ -108,6 +117,15 @@
 			var text = "<p>Поддерживаются сайты: "+sites.join(', ')+"</p>";
 			$('h2.heading').after(text);
 		})();
+		
+		// при начале ajax-запросов
+		$(document).ajaxStart(function() {
+			$(ajaxLoading).removeClass('hide');
+		});
+		// при окончании ajax-запросов
+		$(document).ajaxStop(function() {
+			$(ajaxLoading).addClass('hide');
+		});
 		
 		// Запрещение/разрешение ajax-запросов
 		$('#button_ajax').on('click', function() {
