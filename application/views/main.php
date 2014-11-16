@@ -1,21 +1,21 @@
 <div class="col-sm-9 col-md-10 col-lg-12 main">
-		
+
 	<h2 class="form-signin-heading heading">Скачивание манги</h2>
-		
+
 	<?php if (!empty($error)) { ?>
 		<div class="alert alert-dismissable alert-danger">
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 			<?php echo $error;?>
 		</div>
 	<?php } ?>
-		
+
 	<?php if (!empty($success)) { ?>
 		<div class="alert alert-dismissable alert-success">
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 			<?php echo $success;?>
 		</div>
 	<?php } ?>
-	
+
 	<div id='ajaxLoading' class='hide' title='Ajax-загрузка...'>
 		<div class="progress progress-striped active">
 			<div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
@@ -24,7 +24,7 @@
 		</div>
 		<span>Ajax-загрузка...</span>
 	</div>
-	
+
 	<div class='block'>
 		<div>
 			Сайт: <input id="site" type='url' class="form-control" value='' autocomplete='on' maxlength='150' required placeholder="http://site.com/">
@@ -34,11 +34,11 @@
 				Инфо
 			</button>
 		</div>
-		
+
 		<br>
-		
+
 		<div>
-			Папка: <input id="folder" type='url' class="form-control" value='' autocomplete='on' maxlength='150' placeholder="D:\manga">
+			Папка: <input id="folder" type='url' class="form-control" value='D:\manga\' autocomplete='on' maxlength='150' placeholder="D:\manga">
 			<br>
 			<button id="get_manga_folder" class='btn btn-primary'>
 				<span class="glyphicon glyphicon-search"></span>
@@ -67,13 +67,13 @@
 			Выбрать главы
 		</button>
 	</div>
-	
+
 	<div class='block'>
 		<button id="button_ajax" class='btn btn-primary'>
 			<span class="glyphicon glyphicon-ban-circle"></span>&nbsp;Остановить ajax-запросы
 		</button>
 	</div>
-	
+
 	<table id="manga" class='table'>
 		<tr>
 			<td>Описание</td>
@@ -94,30 +94,30 @@
 
 <script type='text/javascript'>
 	var ajax_allowed = true;
-	
+
 	$.ajaxPrefilter(function(options, originalOptions, jqXHR){
 		if(!ajax_allowed) {
 			jqXHR.abort();
 			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ajax-запросы запрещены</strong></div>");
 		}
 	});
-	
+
 	// Очищение таблицы манги
 	function clear() {
 		$('#manga').find('td.manga, td.chapter').empty();
 	}
-	
+
 	$(document).ready(function() {
 		// список доступных сайтов
 		var sites = ['http://readmanga.me', 'http://adultmanga.ru'];
 		// список глав и ссылок на картинки
 		var image_list = {};
-		
+
 		(function() {
 			var text = "<p>Поддерживаются сайты: "+sites.join(', ')+"</p>";
 			$('h2.heading').after(text);
 		})();
-		
+
 		// при начале ajax-запросов
 		$(document).ajaxStart(function() {
 			$(ajaxLoading).removeClass('hide');
@@ -126,11 +126,11 @@
 		$(document).ajaxStop(function() {
 			$(ajaxLoading).addClass('hide');
 		});
-		
+
 		// Запрещение/разрешение ajax-запросов
 		$('#button_ajax').on('click', function() {
 			$('.main div.alert').remove();
-			
+
 			if (ajax_allowed) {
 				ajax_allowed = false;
 				$(this).html('<span class="glyphicon glyphicon-ok-circle"></span>&nbsp;Разрешить ajax-запросы');
@@ -140,31 +140,31 @@
 				$(this).html('<span class="glyphicon glyphicon-ban-circle"></span>&nbsp;Остановить ajax-запросы');
 					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ajax-запросы разрешены</strong></div>");
 			}
-			
+
 		});
-		
+
 		// Инфо о манге
 		$('#get_manga_info').on('click', function() {
 			clear();
 			$('.main div.alert').remove();
-			
+
 			var url = $("#site").val();
 			var folder = $('#folder').val();
-			
+
 			var html = '';
-			
+
 			for(var key in sites) {
 				if(url.indexOf(sites[key], 0) != -1) {
 					var site = sites[key];
 					break;
 				}
 			}
-			
+
 			if (!site) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Сайт не поддерживается</strong></div>");
 				return;
 			}
-			
+
 			$.ajax({
 				url: "<?php echo $action['get_manga_info'];?>",
 				data: {"url": url, 'folder':folder},
@@ -173,7 +173,7 @@
 				success: function(json) {
 					if (json && json['success'] && json['success'] === 'true') {
 						html = json['html'];
-						
+
 						if (!json['img']) {
 							var img = $(html).find('div.subject-cower #slider a').eq(0).find('img').eq(0).attr('src');
 							if (!img) {
@@ -182,17 +182,17 @@
 						} else {
 							var img = "data:image/"+json['exception']+";base64, "+json['img'];
 						}
-						
+
 						if (!json['description']) {
 							var description = $(html).find('div.manga-description').eq(0).text();
 						} else {
 							var description = json['description'];
 						}
-						
+
 						$("#manga td.manga").append("<img class='image' src='"+img+"'>");
 						$("#manga td.manga").append("<br><br><div class='description'>" + description + "</div>");
 						$("#manga td.manga").append("<button class='save_description btn btn-primary'>Сохранить</button>");
-						
+
 						var tr = $(html).find('div.chapters-link table.cTable tr');
 						if (tr.length > 1) {
 							var a_array = [];
@@ -211,7 +211,7 @@
 									a += "</tr>";
 								a += "</table>";
 								a += "</div>";
-								
+
 								a_array.push(a);
 							}
 							a_array = a_array.join("<br><br>");
@@ -227,17 +227,17 @@
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
 				},
 			});
-			
+
 		});
-		
+
 		// Сохранение информации о манге
 		$("#manga td.manga").on('click', 'button.save_description', function() {
 			$('.main div.alert').remove();
-			
+
 			var folder = $('#folder').val();
 			var description = $('#manga td.manga div.description').text().trim();
 			var img = $('#manga td.manga').find('img.image').eq(0).attr('src');
-			
+
 			$.ajax({
 				url: "<?php echo $action['save_manga_description'];?>",
 				data: {"folder": folder, 'description':description, 'img':img},
@@ -257,15 +257,15 @@
 				},
 			});
 		});
-		
+
 		// Инфо о манге в каталоге
 		$('#get_manga_folder').on('click', function() {
 			$('.main div.alert').remove();
 			$("#manga span.folder").empty();
-			
+
 			var folder = $("#folder").val();
 			var html = '';
-			
+
 			$.ajax({
 				url: "<?php echo $action['get_manga_folder'];?>",
 				data: {"folder": folder},
@@ -273,7 +273,7 @@
 				dataType: 'json',
 				success: function(json) {
 					if (json && json['success'] && json['success'] === 'true') {
-						
+
 						if (json['folder'].length > 0) {
 							var error = [];
 							for(var i=0; i<json['folder'].length; i++) {
@@ -285,22 +285,22 @@
 								} else {
 									error.push(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
 								}
-								
+
 								if (count_image && count_image != ('('+json['folder'][i]['count']+')')) {
 									error.push(json['folder'][i]['name']+' ('+json['folder'][i]['count']+')');
 								}
-								
+
 							}
-							
+
 							if (error.length > 0) {
 								error = error.join('<br><br>');
 								$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+error+"</strong></div>");
 							}
-							
+
 						} else {
 							$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данных нет</strong></div>");
 						}
-						
+
 					} else if (json && json['success'] && json['success'] == 'false') {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
 					}else {
@@ -311,17 +311,17 @@
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
 				},
 			});
-			
+
 		});
-		
+
 		// Получение списка картинок главы
 		$('#manga td.chapter').on('click', 'a.chapter_link', function() {
 			var a = $(this);
 			$('.main div.alert').remove();
 			//$("#manga td.folder").empty();
-			
+
 			var url = $(this).attr('data-href');
-			
+
 			$.ajax({
 				url: "<?php echo $action['get_image_list'];?>",
 				data: {"url": url},
@@ -331,14 +331,14 @@
 					if (json && json['success'] && json['success'] == 'true') {
 						var list = json['list'];
 						image_list[url] = list;
-						
+
 						var len = 0;
 						for(var key in list) {
 							len++;
 						}
-						
+
 						$('#manga td.chapter').find('a[data-href="'+url+'"]').parents('div').eq(0).find('span.count').text('('+len+')');
-						
+
 						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данные загружены</strong></div>");
 					} else if (json && json['success'] && json['success'] == 'false') {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
@@ -350,26 +350,26 @@
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
 				},
 			});
-			
+
 		});
-		
+
 		// Скачивание файлов
 		$('#manga td.chapter').on('click', 'a.download', function() {
-			
+
 			$('.main div.alert').remove();
-			
+
 			var url = $(this).attr('data-href');
 			if (!image_list[url]) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ссылки для скачивания изображений не найдены</strong></div>");
 				return;
 			}
-			
+
 			var data = url.split('/');
 			if (!data[4] || !data[5]) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга ссылки</strong></div>");
 				return;
 			}
-			
+
 			var folder = $('#folder').val();
 			if (!folder) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Каталог пустой</strong></div>");
@@ -395,29 +395,29 @@
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
 				},
 			});
-			
+
 		});
-		
+
 		// Обновление ссылок на изображения глав
 		$('#download_manga_chapter_image_list').on('click', function() {
 			var ch = $('#manga input.checkbox_download');
-			
+
 			var list = [];
 			for(var i=0; i<ch.length; i++) {
 				if ($(ch).eq(i).attr('checked') === 'checked') {
 					list.push(i);
 				}
 			}
-			
+
 			if (list.length == 0) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не выбраны главы</strong></div>");
 				return;
 			}
-			
+
 			recursionDownloadChapterLink(0, list);
 		});
-		
-		
+
+
 		function recursionDownloadChapterLink(index, list) {
 			$('.main div.alert').remove();
 
@@ -430,7 +430,7 @@
 					len++;
 				}
 				$('#manga td.chapter').find('a[data-href="'+url+'"]').parents('div').eq(0).find('span.count').text('('+len+')');
-				
+
 				if (list[next_index]) {
 					recursionDownloadChapterLink(next_index, list);
 					return;
@@ -438,7 +438,7 @@
 					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные загружены</strong></div>");
 				}
 			}
-			
+
 			$.ajax({
 				url: "<?php echo $action['get_image_list'];?>",
 				data: {"url": url},
@@ -448,14 +448,14 @@
 					if (json && json['success'] && json['success'] == 'true') {
 						var list_link = json['list'];
 						image_list[url] = list_link;
-						
+
 						var len = 0;
 						for(var key in list_link) {
 							len++;
 						}
-						
+
 						$('#manga td.chapter').find('a[data-href="'+url+'"]').parents('div').eq(0).find('span.count').text('('+len+')');
-						
+
 						if (list[next_index]) {
 							// если данные в кеше, то следующий запрос делаем сразу
 							if (json['cache'] && (json['cache'] == 'true' || json['cache'] == true)) {
@@ -468,7 +468,7 @@
 						} else {
 							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные глав загружены</strong></div>");
 						}
-						
+
 					} else if (json && json['success'] && json['success'] == 'false') {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
 					} else {
@@ -480,26 +480,26 @@
 				},
 			});
 		}
-		
+
 		// Скачивание глав списком
 		$('#download_manga_chapter_list').on('click', function() {
 			var ch = $('#manga input.checkbox_download');
-			
+
 			var list = [];
 			for(var i=0; i<ch.length; i++) {
 				if ($(ch).eq(i).attr('checked') === 'checked') {
 					list.push(i);
 				}
 			}
-			
+
 			if (list.length == 0) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не выбраны главы</strong></div>");
 				return;
 			}
-			
+
 			recursionDownloadImageList(0, list);
 		});
-		
+
 		// Рекурсивное скачивание изображений по главам
 		function recursionDownloadImageList(index, list) {
 			$('.main div.alert').remove();
@@ -509,13 +509,13 @@
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ссылки для скачивания изображений не найдены</strong></div>");
 				return;
 			}
-			
+
 			var data = url.split('/');
 			if (!data[4] || !data[5]) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга ссылки</strong></div>");
 				return;
 			}
-			
+
 			var folder = $('#folder').val();
 			if (!folder) {
 				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Каталог пустой</strong></div>");
@@ -535,7 +535,7 @@
 						} else {
 							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
 						}
-						
+
 						if (!list[next_index]) {
 							$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
 						}
@@ -544,20 +544,20 @@
 					} else {
 						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка поиска каталога</strong></div>");
 					}
-					
+
 					if (json && (!json['fatal'] || json['fatal'] != 'true') && list[next_index]) {
 						setTimeout(function() {
 							recursionDownloadImageList(next_index, list);
 						}, 3000);
 					}
-					
+
 				},
 				error: function() {
 					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
 				},
 			});
 		}
-		
+
 		// Выбор чекбоксов всех
 		$('#checked_all_checkbox_download').on('change', function() {
 			if ($(this).attr('checked') === 'checked') {
@@ -566,7 +566,7 @@
 				$('#manga input.checkbox_download').removeAttr('checked');
 			}
 		});
-		
+
 		// Выбор указанных глав
 		$('#button_select_chapter').on('click', function() {
 			// TODO: обработка глав
@@ -575,10 +575,10 @@
 			// фомат: 1/1, 1/2, 1/3-2/1
 			var text = $('#select_chapter').val();
 			var pre_chapters = text.split(',');
-			
+
 			for(var key in pre_chapters) {
 				pre_chapters[key] = pre_chapters[key].trim();
-				
+
 				var tere = pre_chapters[key].match('-');
 				// если 1/1
 				if (tere == null) {
@@ -602,27 +602,27 @@
 						if (!end[1]) {
 							end[1] = -1;
 						}
-						
+
 						var vol_start = parseInt(start[0]);
 						var chapter_start = parseInt(start[1]);
 						var vol_end = parseInt(end[0]);
 						var chapter_end = parseInt(end[1]);
-						
+
 						for(var i = vol_start; i <= vol_end; i++) {
 							// если не указаны главы, то ищем сразу по томам
-							if ((i != vol_start && i != vol_end) || 
+							if ((i != vol_start && i != vol_end) ||
 								(i == vol_end && chapter_end == -1) ||
 								(i == vol_start && chapter_start == -1)
 							) {
 								var a_chapter = $('#manga .chapter .chapter_link[data-href *= "vol'+i+'/"]');
-								
+
 								$(a_chapter).each(function(index, a) {
 									$(a).parents('tr').eq(0).find('input.checkbox_download').attr('checked', 'checked');
 								});
-								
+
 								continue;
 							}
-							
+
 							// если указаны главы
 							var a_chapter = $('#manga .chapter .chapter_link[data-href *= "vol'+i+'/"]');
 							//Пробегаем по ссылке тома, сравниваем номер главы с границами
@@ -634,21 +634,21 @@
 								}
 								var ch = parseInt(href[1]);
 								// если глава попадает под границы, то отмечаем
-								if ((i == vol_start && ch >= chapter_start) || 
+								if ((i == vol_start && ch >= chapter_start) ||
 									(i == vol_end && ch <= chapter_end)
 								) {
 									$(a).parents('tr').eq(0).find('input.checkbox_download').attr('checked', 'checked');
 								}
-								
+
 							});
 						}
-						
+
 					}
 				}
 			}
-			
+
 		});
-		
+
 		// Кнопка Наверх
 		$(window).scroll(function() {
 			if ($(this).scrollTop() > 400) {
