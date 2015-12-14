@@ -109,7 +109,7 @@
 
 	$(document).ready(function() {
 		// список доступных сайтов
-		var sites = ['http://readmanga.me', 'http://adultmanga.ru'];
+		var sites = ['http://readmanga.me', 'http://mintmanga.com'];
 		// список глав и ссылок на картинки
 		var image_list = {};
 
@@ -193,13 +193,13 @@
 						$("#manga td.manga").append("<br><br><div class='description'>" + description + "</div>");
 						$("#manga td.manga").append("<button class='save_description btn btn-primary'>Сохранить</button>");
 
-						var tr = $(html).find('div.chapters-link table.cTable tr');
+						var tr = $(html).find('div.chapters-link table.table tr');
 						if (tr.length > 1) {
 							var a_array = [];
 
 							for(var i=(tr.length-1); i>0; i--) {
-								var href = $(tr).eq(i).find('td').eq(1).find('a').eq(0).attr('href');
-								var text = $(tr).eq(i).find('td').eq(1).find('a').eq(0).text();
+								var href = $(tr).eq(i).find('td').eq(0).find('a').eq(0).attr('href');
+								var text = $(tr).eq(i).find('td').eq(0).find('a').eq(0).text();
 								var a = "<div class='chapter_div'>";
 								a += "<table class='table'>";
 									a += "<tr>";
@@ -572,7 +572,7 @@
 			// TODO: обработка глав
 			$('#manga input.checkbox_download').removeAttr('checked');
 
-			// фомат: 1/1, 1/2, 1/3-2/1
+			// формат: 1/1, 1/2, 1/3-2/1
 			var text = $('#select_chapter').val();
 			var pre_chapters = text.split(',');
 

@@ -4,10 +4,6 @@ class Main extends CI_Controller {
 	// Переменная нахождения данных в кеше
 	protected $in_cache = false;
 
-	public function __contruct() {
-
-	}
-
 	/**
 	 * Страница: скачивание манги
 	 */
@@ -125,34 +121,27 @@ class Main extends CI_Controller {
 			$html = $this->getContents($url.'/?mature=1', true);
 
 			if (!empty($html)) {
-				$data = explode('var pictures = ', $html, 2);
+				$data = explode('rm_h.init([', $html, 2);
 				if (empty($data[1])) {
 					$json['success'] = 'false';
 					$json['message'] = 'Нет данных (pictures)';
 				} else {
-					$data = explode("var prevLink", $data[1], 2);
-					if (empty($data[0])) {
-						$json['success'] = 'false';
-						$json['message'] = 'Нет данных (prevLink)';
-					} else {
-						$data = trim($data[0]);
-						// удаляем ;
-						$data = substr_replace($data,'', -1, 1);
+					$js = explode('], 0, false);', $data[1]);
 
-						$tmp1 = preg_split('/{url:"/im', $data, -1, PREG_SPLIT_NO_EMPTY);
+					$js = '{"data":['.$js[0].']}';
+					$js = str_replace("'", '"', $js);
+
+					$js_list = json_decode($js, true);
+
 						$list = array();
-						foreach($tmp1 as $key=>$value) {
-							if ($value == '[') {
-								continue;
-							}
-							$tmp2 = explode('"',$value);
-							$list[] = $tmp2[0];
+						foreach($js_list['data'] as $l) {
+							$list[] = $l[1].$l[0].$l[2];
 						}
 
 						$json['list'] = $list;
 						$json['success'] = 'true';
 						$json['cache'] = $this->in_cache;
-					}
+
 				}
 
 			} else {

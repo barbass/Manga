@@ -1,18 +1,32 @@
-# Запрещаем доступ к файлу TODO
-<Files "TODO.txt">
-	deny from all
+<FilesMatch ".(git|ini|htaccess)">
+	Order deny,allow
+	Deny from all
+</FilesMatch>
+
+<Files "composer.json">
+	Order deny,allow
+	Deny from all
 </Files>
 
-# Устанавливаем страницу для ошибки 404
+
+# РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃС‚СЂР°РЅРёС†Сѓ РґР»СЏ РѕС€РёР±РєРё 404
 ErrorDocument 404 /index.php
- 
-# Устанавливаем индексный файл для директории
+
+# РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёРЅРґРµРєСЃРЅС‹Р№ С„Р°Р№Р» РґР»СЏ РґРёСЂРµРєС‚РѕСЂРёРё
 DirectoryIndex index.php
- 
-# Определяем правила для модуля mod_rewrite
+
+# Р—Р°РїСЂРµС‰Р°РµРј РґРѕСЃС‚СѓРї Рє РєР°С‚Р°Р»РѕРіСѓ .git СЃ РїРѕРјРѕС‰СЊСЋ СЂРµРґРёСЂРµРєС‚Р°
+RedirectMatch 301 ^(.*)\.git(.*)$ index.php
+
+Options All -Indexes
+
+# РћРїСЂРµРґРµР»СЏРµРј РїСЂР°РІРёР»Р° РґР»СЏ РјРѕРґСѓР»СЏ mod_rewrite
 <IfModule mod_rewrite.c>
 	RewriteEngine on
+
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
+
+	# Р РµРґРёСЂРµРєС‚ РІСЃРµС… Р·Р°РїСЂРѕСЃРѕРІ РЅР° index.php
 	RewriteRule ^(.*)$ index.php?/$1 [L]
 </IfModule>
