@@ -12,7 +12,7 @@ class Main extends CI_Controller {
 			'get_manga_info' => base_url('main/getMangaInfo'),
 			'get_manga_folder' => base_url('main/getMangaFolder'),
 			'get_image_list' => base_url('main/getImageList'),
-			'get_download_list' => base_url('main/downloadImage'),
+			'get_download_list' => base_url('main/downloadImageList'),
 			'save_manga_description' => base_url('main/saveMangaDescription'),
 		);
 
@@ -160,7 +160,7 @@ class Main extends CI_Controller {
 	/**
 	 * Загрузка изображений
 	 */
-	public function downloadImage() {
+	public function downloadImageList() {
 		$config_manga = $this->config->item('manga');
 
 		// для больших манг делаем 15 минут время скрипта
@@ -173,19 +173,17 @@ class Main extends CI_Controller {
 		$folder = $this->input->get_post('folder', 'default');
 
 		if (!is_dir($folder)) {
-			mkdir ($folder);
+			mkdir($folder);
 		}
 		if (!is_dir($folder.'/'.$volume)) {
-			mkdir ($folder.'/'.$volume);
+			mkdir($folder.'/'.$volume);
 		}
 		if (!is_dir($folder.'/'.$volume.'/'.$chapter)) {
-			mkdir ($folder.'/'.$volume.'/'.$chapter);
+			mkdir($folder.'/'.$volume.'/'.$chapter);
 		}
 
 		$dir = $folder.'/'.$volume.'/'.$chapter;
 
-		// Грузим данные по циклу
-		$i = 0;
 		foreach($list as $l) {
 			$image_array = explode('/', $l);
 			$image = end($image_array);
@@ -212,12 +210,7 @@ class Main extends CI_Controller {
 			}
 
 			// заставляем скрипт заснуть на N секунд, чтобы не было DDOS и ресурсы сервера не загрузить
-			if ($i > 1) {
-				$i = 0;
-				sleep(5);
-			}
-
-			$i++;
+			sleep(1);
 		}
 
 		if (empty($json)) {
@@ -273,7 +266,7 @@ class Main extends CI_Controller {
 	 * TODO: в model по факту надо перенести
 	 * TODO: попробовать заменить на cUrl
 	 */
-	private function getContents($url, $cache = false, $use_include_path = false, $context=null, $offset = -1, $maxLen=-1, $lowercase = true) {
+	protected function getContents($url, $cache = false, $use_include_path = false, $context=null, $offset = -1, $maxLen=-1, $lowercase = true) {
 		$this->load->driver('cache', array('adapter' => 'file'));
 		$config_manga = $this->config->item('manga');
 
@@ -286,9 +279,8 @@ class Main extends CI_Controller {
 				throw new Exception('Ошибка загрузки страницы');
 				return false;
 			}
-			// сохраняем кеш на 24 часа
+
 			if ($cache === true) {
-				// 24*60*60
 				$this->cache->save($filename, $contents, $config_manga['cache']);
 			}
 		} else {
@@ -307,7 +299,7 @@ class Main extends CI_Controller {
 	 * Скачивание данных
 	 * Доп. функция для работы через cUrl
 	 */
-	private function getHtml($url) {
+	protected function getHtml($url) {
 		ob_clean();
 
 		$ch = curl_init();
