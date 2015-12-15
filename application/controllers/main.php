@@ -1,6 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class Main extends CI_Controller {
+
 	// Переменная нахождения данных в кеше
 	protected $in_cache = false;
 
@@ -161,6 +162,8 @@ class Main extends CI_Controller {
 	 * Загрузка изображений
 	 */
 	public function downloadImageList() {
+		session_write_close();
+
 		$config_manga = $this->config->item('manga');
 
 		// для больших манг делаем 15 минут время скрипта

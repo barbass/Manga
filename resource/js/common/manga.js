@@ -36,9 +36,9 @@ Manga.prototype = {
 	 * Получение информации о манге
 	 */
 	getMangaInfo: function() {
-		this.clear();
+		var self = this;
 
-		$('.main div.alert').remove();
+		this.clear();
 
 		var url = $("#site").val();
 		var folder = $('#folder').val();
@@ -53,7 +53,7 @@ Manga.prototype = {
 		}
 
 		if (!site) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Сайт не поддерживается</strong></div>");
+			this.alert("Сайт не поддерживается");
 			return;
 		}
 
@@ -110,13 +110,13 @@ Manga.prototype = {
 						$("#manga td.chapter").append(a_array);
 					}
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				}else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга</strong></div>");
+					self.alert('Ошибка парсинга');
 				}
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
@@ -125,7 +125,7 @@ Manga.prototype = {
 	 * Сохранение информации о манге
 	 */
 	saveMangaInfo: function() {
-		$('.main div.alert').remove();
+		var self = this;
 
 		var folder = $('#folder').val();
 		var description = $('#manga td.manga div.description').text().trim();
@@ -138,15 +138,15 @@ Manga.prototype = {
 			dataType: 'json',
 			success: function(json) {
 				if (json && json['success'] && json['success'] === 'true') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данные сохранены</strong></div>");
+					self.alert('Данные сохранены', 'success');
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert('Не удалось загрузить данные');
 				}else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка сохранения данных</strong></div>");
+					self.alert('Не удалось загрузить данные');
 				}
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
@@ -155,7 +155,8 @@ Manga.prototype = {
 	 * Поиск манги на локальном компьютере
 	 */
 	getMangaFromFolder: function() {
-		$('.main div.alert').remove();
+		var self = this;
+
 		$("#manga span.folder").empty();
 
 		var folder = $("#folder").val();
@@ -189,27 +190,26 @@ Manga.prototype = {
 
 						if (error.length > 0) {
 							error = error.join('<br><br>');
-							$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+error+"</strong></div>");
+							self.alert(error);
 						}
 
 					} else {
-						$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данных нет</strong></div>");
+						self.alert('Данных нет');
 					}
 
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				}else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка поиска каталога</strong></div>");
+					self.alert('Ошибка поиска каталога');
 				}
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
 
 	getImageListFromChapter: function(href) {
-		$('.main div.alert').remove();
 		var self = this;
 
 		$.ajax({
@@ -229,15 +229,15 @@ Manga.prototype = {
 
 					$('#manga td.chapter').find('a[data-href="'+url+'"]').parents('div').eq(0).find('span.count').text('('+len+')');
 
-					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Данные загружены</strong></div>");
+					self.alert('Данные загружены', 'success');
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				} else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга списка изображений</strong></div>");
+					self.alert('Ошибка парсинга списка изображений');
 				}
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
@@ -247,22 +247,22 @@ Manga.prototype = {
 	 * @param string url
 	 */
 	downloadImageListFromChapter: function(url) {
-		$('.main div.alert').remove();
+		var self = this;
 
 		if (!this.image_list[url]) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ссылки для скачивания изображений не найдены</strong></div>");
+			self.alert('Ссылки для скачивания изображений не найдены');
 			return;
 		}
 
 		var data = url.split('/');
 		if (!data[4] || !data[5]) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга ссылки</strong></div>");
+			self.alert('Ошибка парсинга ссылки');
 			return;
 		}
 
 		var folder = $('#folder').val();
 		if (!folder) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Каталог пустой</strong></div>");
+			self.alert('Каталог пустой');
 			return;
 		}
 
@@ -274,11 +274,11 @@ Manga.prototype = {
 			success: function(json) {
 				if (json && json['success'] && json['success'] == 'true') {
 					$('#get_manga_folder').click();
-					$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
+					self.alert('Файлы загружены', 'success');
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				} else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка поиска каталога</strong></div>");
+					self.alert('Ошибка поиска каталога');
 				}
 			},
 			error: function() {
@@ -295,8 +295,6 @@ Manga.prototype = {
 	recursionDownloadChapterLink: function(index, list) {
 		var self = this;
 
-		$('.main div.alert').remove();
-
 		var url = $('#manga td.chapter a.download').eq(list[index]).attr('data-href');
 		var next_index = index+1;
 
@@ -311,7 +309,7 @@ Manga.prototype = {
 				self.recursionDownloadChapterLink(next_index, list);
 				return;
 			} else {
-				$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные загружены</strong></div>");
+				self.alert('Все данные загружены', 'success');
 			}
 		}
 
@@ -342,17 +340,17 @@ Manga.prototype = {
 							}, 3000);
 						}
 					} else {
-						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Все данные глав загружены</strong></div>");
+						self.alert('Все данные глав загружены', 'success');
 					}
 
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				} else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга списка изображений</strong></div>");
+					self.alert('Ошибка парсинга списка изображений');
 				}
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
@@ -365,23 +363,22 @@ Manga.prototype = {
 	recursionDownloadImageList: function(index, list) {
 		var self = this;
 
-		$('.main div.alert').remove();
 		var next_index = index+1;
 		var url = $('#manga td.chapter a.download').eq(list[index]).attr('data-href');
 		if (!this.image_list[url]) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ссылки для скачивания изображений не найдены</strong></div>");
+			self.alert('Ссылки для скачивания изображений не найдены');
 			return;
 		}
 
 		var data = url.split('/');
 		if (!data[4] || !data[5]) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка парсинга ссылки</strong></div>");
+			self.alert('Ошибка парсинга ссылки');
 			return;
 		}
 
 		var folder = $('#folder').val();
 		if (!folder) {
-			$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Каталог пустой</strong></div>");
+			self.alert('Каталог пустой');
 			return;
 		}
 
@@ -394,18 +391,18 @@ Manga.prototype = {
 			success: function(json) {
 				if (json && json['success'] && json['success'] == 'true') {
 					if (!json['message']) {
-						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
+						self.alert('Файлы загружены', 'success');
 					} else {
-						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+						self.alert(json['message']);
 					}
 
 					if (!list[next_index]) {
-						$('.main h2').after("<div class='alert alert-dismissable alert-success'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Файлы загружены</strong></div>");
+						self.alert('Файлы загружены', 'success');
 					}
 				} else if (json && json['success'] && json['success'] == 'false') {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>"+json['message']+"</strong></div>");
+					self.alert(json['message']);
 				} else {
-					$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Ошибка поиска каталога</strong></div>");
+					self.alert('Ошибка поиска каталога');
 				}
 
 				if (json && (!json['fatal'] || json['fatal'] != 'true') && list[next_index]) {
@@ -416,7 +413,7 @@ Manga.prototype = {
 
 			},
 			error: function() {
-				$('.main h2').after("<div class='alert alert-dismissable alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>Не удалось загрузить данные</strong></div>");
+				self.alert('Не удалось загрузить данные');
 			},
 		});
 	},
@@ -432,5 +429,67 @@ Manga.prototype = {
 	clear: function() {
 		$('#manga').find('td.manga, td.chapter').empty();
 	},
+
+	/**
+	 * Вывод информации
+	 * @param string text
+	 * @param string type
+	 */
+	alert: function(text, type) {
+		$('.main div.alert').remove();
+
+		if (!type) {
+			type = 'danger';
+		}
+
+		$('.main h2').after("<div class='alert alert-dismissable alert-" + type + "'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><strong>" + text + "</strong></div>");
+
+		this.notify(text);
+	},
+
+	/**
+	 * Оповещение клиента, если он не на текущей странице
+	 * @param string title
+	 * @param string text
+	 * @param object params
+	 * params {
+	 * 	'icon' string
+	 * }
+	 */
+	notify: function(title, text, params) {
+		if (typeof(document.hidden) !== 'undefined') {
+			if (document.hidden === false) {
+				return;
+			}
+		}
+
+		var Notification = window.Notification || window.mozNotification || window.webkitNotification;
+		if (!Notification) {
+			return false;
+		}
+
+		Notification.requestPermission(function(permission) {
+			Notification.permission = permission;
+
+			if (permission !== 'denied') {
+				var div_text = $('<div></div>');
+				$(div_text).html(text);
+				text = $(div_text).text();
+
+				var div_title = $('<div></div>');
+				$(div_title).html(title);
+				title = $(div_title).text();
+
+				var options = {
+					'body': (typeof(text) === 'string') ? text : '',
+					'sound': true,
+				};
+
+				var instance = new Notification(title, options);
+
+				return false;
+			}
+		});
+	}
 
 }
