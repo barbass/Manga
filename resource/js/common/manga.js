@@ -95,7 +95,7 @@ Manga.prototype = {
 							var a = "<div class='chapter_div'>";
 							a += "<table class='table'>";
 								a += "<tr>";
-									a += "<td><input type='checkbox' class='checkbox_download' chedled></td>";
+									a += "<td><input type='checkbox' class='checkbox_download' checked></td>";
 									a += "<td><a href='javascript:void(0);' data-href='"+site+href+"' class='chapter_link'>"+text+"</a></td>";
 									a += "<td><a href='javascript:void(0);' data-href='"+site+href+"' class='download'>Скачать</a></td>";
 									a += "<td><span class='count'>-</span></td>";
