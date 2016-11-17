@@ -209,12 +209,12 @@ Manga.prototype = {
 		});
 	},
 
-	getImageListFromChapter: function(href) {
+	getImageListFromChapter: function(url) {
 		var self = this;
 
 		$.ajax({
 			url: this.url_list['get_image_list'],
-			data: {"url": href},
+			data: {"url": url},
 			type: "POST",
 			dataType: 'json',
 			success: function(json) {

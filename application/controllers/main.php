@@ -122,7 +122,10 @@ class Main extends CI_Controller {
 			$html = $this->getContents($url.'/?mature=1', true);
 
 			if (!empty($html)) {
-				$data = explode('rm_h.init([', $html, 2);
+				$data = preg_split('/rm_h\.init\(\s*\[/', $html, 2);
+
+				//$data = explode('rm_h.init( [', $html, 2);
+
 				if (empty($data[1])) {
 					$json['success'] = 'false';
 					$json['message'] = 'Нет данных (pictures)';
