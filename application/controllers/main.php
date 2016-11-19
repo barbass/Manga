@@ -9,6 +9,9 @@ class Main extends CI_Controller {
 	 * Страница: скачивание манги
 	 */
 	public function index() {
+		/*$this->load->driver('cache', array('adapter' => 'file'));
+		$this->cache->clean();*/
+
 		$data['action'] = array(
 			'get_manga_info' => base_url('main/getMangaInfo'),
 			'get_manga_folder' => base_url('main/getMangaFolder'),
@@ -274,6 +277,7 @@ class Main extends CI_Controller {
 	 */
 	protected function getContents($url, $cache = false, $use_include_path = false, $context=null, $offset = -1, $maxLen=-1, $lowercase = true) {
 		$this->load->driver('cache', array('adapter' => 'file'));
+
 		$config_manga = $this->config->item('manga');
 
 		$filename = md5($url);
@@ -283,7 +287,6 @@ class Main extends CI_Controller {
 			$contents = file_get_contents($url, $use_include_path, $context, $offset);
 			if (!$contents || empty($contents) || strlen($contents) > $config_manga['page']) {
 				throw new Exception('Ошибка загрузки страницы');
-				return false;
 			}
 
 			if ($cache === true) {
@@ -295,7 +298,6 @@ class Main extends CI_Controller {
 
 		if (!$contents) {
 			throw new Exception('Ошибка загрузки страницы');
-			return;
 		}
 
 		return $contents;
